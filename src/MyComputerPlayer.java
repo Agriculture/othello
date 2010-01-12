@@ -1,16 +1,18 @@
 import gki.game.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import othello.base.OthelloGame;
 
 public class MyComputerPlayer<MoveT> implements IComputerPlayer<MoveT>
 {
-    private double bestReachableEvaluation=0;
-    private MoveT lastMove;
+	private Double best = null;
+	private MoveT bestMove = null;
     public String getLastMoveDescription()
     {
-        return "Erreichbare Bewertung: "+bestReachableEvaluation+
-                " letzter Zug: "+lastMove.toString();
+        return "best: "+best+" bestMove: "+bestMove.toString();
     }
 
-    public MoveT findBestMove(IStdGame<MoveT> game, int maxDepth,
+    public MoveT findBestMove(IStdGame<MoveT> game, int bestDepth,
             IGameEvaluator<MoveT> evaluator)
     {
         //++++++++++++++++++++++++++++++++++++
@@ -18,15 +20,29 @@ public class MyComputerPlayer<MoveT> implements IComputerPlayer<MoveT>
 
         //Todo: bessere Strategie, beste erreichbare Bewertung genauer setzen
         //simpel: ersten gefundenen Zug durchführen
+		Double value;
+		IStdGame<MoveT> tmpGame = null;
+		best = null;
+
         for(MoveT move:game.getPossibleMoves())
         {
-            bestReachableEvaluation=0;
-            lastMove=move;
+			tmpGame = game.copy();
+			try {
+				tmpGame.doMove(move);
+			} catch (Exception ex) {
+				Logger.getLogger(MyComputerPlayer.class.getName()).log(Level.SEVERE, null, ex);
+			}
+			value = evaluator.evaluateGame(tmpGame);
+		//	System.out.println("MOVE: "+move+"\tvalue: "+value);
 
-            return move;
+			if((best == null) || (game.isPlayer1sTurn() && value > best) ||
+								(!game.isPlayer1sTurn() && value < best)){
+				bestMove = move;
+				best = value;
+			}
+
         }
-
-        return null; //falls kein Zug möglich ist
+        return bestMove;
         // student end
         //+++++++++++++++++++++++++++++++++
     }
