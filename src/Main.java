@@ -3,11 +3,11 @@ import othello.base.*;
 
 public class Main 
 {
-    private static void testPlayer(IGameEvaluator<OthelloMove> evaluator, MyComputerPlayer player)
+    private static void testPlayer(IGameEvaluator<OthelloMove> evaluator, MyComputerPlayer player) throws Exception
     {
         try
         {
-            double erg=OthelloControler.percentageWinsPlayerAgainstRnd(evaluator, player, 1, 100,true);
+            double erg=OthelloControler.percentageWinsPlayerAgainstRnd(evaluator, player, 2, 100,true);
             System.out.println("Gewonnen: "+erg*100+" %");
         }
         catch(Exception ex)
@@ -16,13 +16,13 @@ public class Main
             ex.printStackTrace(System.err);
         }
     }
-    public static void main(String[] args) 
+    public static void main(String[] args) throws Exception
     {
         MyOthelloEvaluator evaluator=new MyOthelloEvaluator();
         MyComputerPlayer player=new MyComputerPlayer();
         
-        OthelloControler.run(evaluator, player);
+        //OthelloControler.run(evaluator, player);
         //OthelloControler.runConsole(evaluator, player,5);
-        //testPlayer(evaluator,player);
+        testPlayer(evaluator,player);
     }
 }
