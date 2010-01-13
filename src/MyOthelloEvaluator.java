@@ -26,6 +26,7 @@ public class MyOthelloEvaluator implements IGameEvaluator<OthelloMove>
 		discCount();
 
 		corner();
+
 		try {
 			mobility();
 		} catch (Exception ex) {
@@ -91,7 +92,9 @@ public class MyOthelloEvaluator implements IGameEvaluator<OthelloMove>
 			tmpGame.doMove(move);
 			int count = 0;
 			for(OthelloMove futureMove : tmpGame.getPossibleMoves()){
-				count++;
+				if(game.isPlayer1sTurn() != tmpGame.isPlayer1sTurn()){
+					count++;
+				}
 			}
 			comingMoves.add(count);
 		}
