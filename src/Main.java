@@ -22,7 +22,7 @@ public class Main
         MyComputerPlayer player=new MyComputerPlayer();
         
         //OthelloControler.run(evaluator, player);
-        //OthelloControler.runConsole(evaluator, player,5);
-        testPlayer(evaluator,player);
+        OthelloControler.runConsole(evaluator, player,2);
+       // testPlayer(evaluator,player);
     }
 }

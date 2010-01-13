@@ -14,14 +14,24 @@ import java.util.logging.Logger;
 public class Node<MoveT> {
 
     private IStdGame<MoveT> state;
+    private IStdGame<MoveT> parent = null;
     private MoveT move;
     private int depth;
     private MoveT bestMove;
+    // for pruning
+    private Double p1Bound;
+    private Double p2Bound;
 
     public Node(IStdGame<MoveT> original, MoveT move, int depth) {
+        if(depth > 0){
+            this.parent = original;
+        }
         this.state = original.copy();
         this.move = move;
         this.depth = depth;
+
+        this.p1Bound = 0d;
+        this.p2Bound = 0d;
 
         try {
             if (move != null) {
@@ -60,6 +70,11 @@ public class Node<MoveT> {
             }
 
         }
+        if(state.isPlayer1sTurn()){
+            p1Bound = best;
+        } else {
+            p2Bound = best;
+        }
 
         return bestMove;
 
@@ -73,6 +88,7 @@ public class Node<MoveT> {
                 bestMove = getBestMove(evaluator, maxDepth);
             }
             //System.out.println("best move at depth "+depth+" is "+bestMove);
+            System.out.println(this);
             Node<MoveT> next = new Node(state, bestMove, depth+1);
             return next.getValue(evaluator, maxDepth);
         }
@@ -86,5 +102,18 @@ public class Node<MoveT> {
     // checking the max depth
     public int getDepth() {
         return depth;
+    }
+
+    // for checking while pruning
+    public Double getP1Bound(){
+        return p1Bound;
+    }
+    public Double getP2Bound(){
+        return p2Bound;
+    }
+
+    @Override
+    public String toString() {
+        return "Node "+move+" at depth "+depth+" with bounds ("+p1Bound+", "+p2Bound+")";
     }
 }
