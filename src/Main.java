@@ -1,4 +1,5 @@
 import gki.game.*;
+import java.util.Date;
 import othello.base.*;
 
 public class Main 
@@ -7,8 +8,12 @@ public class Main
     {
  /*      try
         {
-*/            double erg=OthelloControler.percentageWinsPlayerAgainstRnd(evaluator, player, 1, 100,true);
+*/
+            Long start = System.currentTimeMillis();
+            double erg=OthelloControler.percentageWinsPlayerAgainstRnd(evaluator, player, 3, 100,true);
             System.out.println("Gewonnen: "+erg*100+" %");
+            Long end = System.currentTimeMillis();
+            System.out.println("time "+(end - start) +" (ms)");
         }
 /*        catch(Exception ex)
         {
@@ -21,8 +26,8 @@ public class Main
         MyOthelloEvaluator evaluator=new MyOthelloEvaluator();
         MyComputerPlayer player=new MyComputerPlayer();
         
-        OthelloControler.run(evaluator, player);
+       // OthelloControler.run(evaluator, player);
        // OthelloControler.runConsole(evaluator, player,2);
-        //testPlayer(evaluator,player);
+        testPlayer(evaluator,player);
     }
 }
