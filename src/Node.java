@@ -18,20 +18,16 @@ public class Node<MoveT> {
     private MoveT move;
     private int depth;
     private MoveT bestMove;
-    // for pruning
-    private Double min;
-    private Double max;
+
 
     public Node(IStdGame<MoveT> original, MoveT move, int depth) {
-        if(depth > 0){
+        if (depth > 0) {
             this.parent = original;
         }
         this.state = original.copy();
         this.move = move;
         this.depth = depth;
 
-        this.min = 0d;
-        this.max = 0d;
 
         try {
             if (move != null) {
@@ -52,57 +48,51 @@ public class Node<MoveT> {
      * @param maxDepth
      * @return
      */
-    public MoveT getBestMove(IGameEvaluator<MoveT> evaluator, int maxDepth) {
+    public MoveT getBestMove() {
+        return bestMove;
+    }
+
+    public Double getValue(IGameEvaluator<MoveT> evaluator, Double alpha, Double beta) {
+        // NegaMax
+
+        if (depth == 0) {
+            if(!state.isPlayer1sTurn()){
+                // player 2 tries to maximize the negation of the value
+                return -evaluator.evaluateGame(state);
+            } else {
+                return evaluator.evaluateGame(state);
+            }
+        }
+
         Double value = null;
         Node<MoveT> node = null;
         Double best = null;
         bestMove = null;
-
+        // get the next moves
         for (MoveT m : state.getPossibleMoves()) {
-            // calculate
-			node = new Node(state, m, depth + 1);
-            value = node.getValue(evaluator, maxDepth);
-			// update the bound
-			if(state.isPlayer1sTurn()){
-				if(value < min){
-					min = value;
-				}
-			} else {
-				if(best > max){
-					max = value;
-				}
-			}
+            node = new Node(state, m, depth - 1);
+            System.out.println("MOVE: "+m+"\t at depth "+depth+"\t("+alpha+", "+beta+")\t go down");
+            value = -node.getValue(evaluator, -alpha, -beta);
+            System.out.println("MOVE: "+m+"\t at depth "+depth+"\t("+alpha+", "+beta+")\tvalue: "+value);
 
-			if(!state.isPlayer1sTurn()){
-				value = 1 - value;
-			}
-            //	System.out.println("MOVE: "+move+"\tvalue: "+value);
-
-            if ((best == null) || (value > best)){
+            if(value >= beta){
                 bestMove = m;
-                best = value;
+                System.out.println("CUT");
+                return beta;
+            }
+            if(value > alpha){
+                bestMove = m;
+                alpha = value;
             }
 
-        }
-		if(best != null){
-		}
-
-        return bestMove;
-
-    }
-
-    public Double getValue(IGameEvaluator<MoveT> evaluator, int maxDepth) {
-        if (depth >= maxDepth) {
-            return evaluator.evaluateGame(state);
-        } else {
-            if(bestMove == null){
-                bestMove = getBestMove(evaluator, maxDepth);
+            if (!state.isPlayer1sTurn()) {
+                value = 1 - value;
             }
-            //System.out.println("best move at depth "+depth+" is "+bestMove);
-         //   System.out.println(this);
-            Node<MoveT> next = new Node(state, bestMove, depth+1);
-            return next.getValue(evaluator, maxDepth);
+            
         }
+
+        return alpha;
+
     }
 
     // for getting the result while searching we need to recover the move
@@ -115,16 +105,8 @@ public class Node<MoveT> {
         return depth;
     }
 
-    // for checking while pruning
-    public Double getmin(){
-        return min;
-    }
-    public Double getmax(){
-        return max;
-    }
-
     @Override
     public String toString() {
-        return "Node "+move+" at depth "+depth+" with bounds ("+min+", "+max+")";
+        return "Node " + move + " at depth " + depth;
     }
 }
