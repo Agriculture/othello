@@ -10,7 +10,7 @@ public class Main
         {
 */
             Long start = System.currentTimeMillis();
-            double erg=OthelloControler.percentageWinsPlayerAgainstRnd(evaluator, player, 3, 100,true);
+            double erg=OthelloControler.percentageWinsPlayerAgainstRnd(evaluator, player, 2, 100,true);
             System.out.println("Gewonnen: "+erg*100+" %");
             Long end = System.currentTimeMillis();
             System.out.println("time "+(end - start) +" (ms)");
