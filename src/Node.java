@@ -1,7 +1,9 @@
 
 import gki.game.*;
+import java.util.PriorityQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import othello.base.OthelloMove;
 
 /*
  * To change this template, choose Tools | Templates
@@ -11,22 +13,20 @@ import java.util.logging.Logger;
  *
  * @author konrad
  */
-public class Node<MoveT> {
+public class Node<MoveT> implements Comparable {
 
     private IStdGame<MoveT> state;
-    private IStdGame<MoveT> parent = null;
+    private IGameEvaluator<MoveT> evaluator;
     private MoveT move;
     private int depth;
     private MoveT bestMove;
 
 
-    public Node(IStdGame<MoveT> original, MoveT move, int depth) {
-        if (depth > 0) {
-            this.parent = original;
-        }
+    public Node(IStdGame<MoveT> original, IGameEvaluator<MoveT> evaluator, MoveT move, int depth) {
         this.state = original.copy();
         this.move = move;
         this.depth = depth;
+        this.evaluator = evaluator;
 
 
         try {
@@ -52,17 +52,17 @@ public class Node<MoveT> {
         return bestMove;
     }
 
-    public Double getValue(IGameEvaluator<MoveT> evaluator) {
+    public Double getValue() {
         // NegaMax
 
-        return NegaMax(evaluator, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        return NegaMax(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 /*        if(state.isPlayer1sTurn()){
             return max(evaluator, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         } else {
             return min(evaluator, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         }
 */    }
-    public Double max(IGameEvaluator<MoveT> evaluator, Double alpha, Double beta){
+    public Double max(Double alpha, Double beta){
         if (depth == 0 || !state.getPossibleMoves().iterator().hasNext()) {
            return evaluator.evaluateGame(state);
         }
@@ -73,9 +73,9 @@ public class Node<MoveT> {
         bestMove = null;
         // get the next moves
         for (MoveT m : state.getPossibleMoves()) {
-            node = new Node(state, m, depth - 1);
+            node = new Node(state, evaluator, m, depth - 1);
           //  System.out.println("from "+move+" down to "+m+"\t at depth "+depth+"\t("+alpha+", "+beta+")\t go down");
-            value = node.min(evaluator, alpha, beta);
+            value = node.min(alpha, beta);
             //System.out.println("MOVE: "+m+"\t\t at depth "+depth+"\t("+alpha+", "+beta+")\tvalue: "+value);
 
             if(bestMove == null){
@@ -95,7 +95,7 @@ public class Node<MoveT> {
         return alpha;
     }
 
-    public Double NegaMax(IGameEvaluator<MoveT> evaluator, Double alpha, Double beta){
+    public Double NegaMax(Double alpha, Double beta){
         if (depth == 0 || !state.getPossibleMoves().iterator().hasNext()) {
             if(state.isPlayer1sTurn()){
                 return evaluator.evaluateGame(state);
@@ -108,13 +108,18 @@ public class Node<MoveT> {
         Node<MoveT> node = null;
         bestMove = null;
         // get the next moves
+        PriorityQueue<Node> queue = new PriorityQueue<Node>();
         for (MoveT m : state.getPossibleMoves()) {
-            node = new Node(state, m, depth - 1);
+            queue.add(new Node(state, evaluator, m, depth - 1));
+        }
+        
+        while(!queue.isEmpty()){
+            node = queue.poll();
           //  System.out.println("from "+move+" down to "+m+"\t at depth "+depth+"\t("+alpha+", "+beta+")\t go down");
-            value = -node.NegaMax(evaluator, -beta, -alpha);
+            value = -node.NegaMax(-beta, -alpha);
 
             if(bestMove == null){
-                bestMove = m;
+                bestMove = node.getMove();
             }
 
             if(value >= beta){
@@ -122,7 +127,7 @@ public class Node<MoveT> {
             }
 
             if(value > alpha){
-                bestMove = m;
+                bestMove = node.getMove();
                 alpha = value;
             }
         }
@@ -130,7 +135,7 @@ public class Node<MoveT> {
         return alpha;
     }
 
-    public Double min(IGameEvaluator<MoveT> evaluator, Double alpha, Double beta){
+    public Double min(Double alpha, Double beta){
         if (depth == 0 || !state.getPossibleMoves().iterator().hasNext()) {
            return evaluator.evaluateGame(state);
         }
@@ -141,9 +146,9 @@ public class Node<MoveT> {
         bestMove = null;
         // get the next moves
         for (MoveT m : state.getPossibleMoves()) {
-            node = new Node(state, m, depth - 1);
+            node = new Node(state, evaluator, m, depth - 1);
           //  System.out.println("from "+move+" down to "+m+"\t at depth "+depth+"\t("+alpha+", "+beta+")\t go down");
-            value = node.max(evaluator, alpha, beta);
+            value = node.max(alpha, beta);
             //System.out.println("MOVE: "+m+"\t\t at depth "+depth+"\t("+alpha+", "+beta+")\tvalue: "+value);
             if(bestMove == null){
                 bestMove = m;
@@ -172,9 +177,19 @@ public class Node<MoveT> {
     public int getDepth() {
         return depth;
     }
+    public IStdGame<MoveT> getState() {
+        return state;
+    }
 
     @Override
     public String toString() {
         return "Node " + move + " at depth " + depth;
+    }
+
+    public int compareTo(Object arg0) {
+        Node o = (Node) arg0;
+        Double a = evaluator.evaluateGame(state);
+        Double b = evaluator.evaluateGame(o.getState());
+        return a.compareTo(b);
     }
 }
