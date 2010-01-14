@@ -7,7 +7,7 @@ public class Main
     {
         try
         {
-            double erg=OthelloControler.percentageWinsPlayerAgainstRnd(evaluator, player, 2, 100,true);
+            double erg=OthelloControler.percentageWinsPlayerAgainstRnd(evaluator, player, 1, 100,true);
             System.out.println("Gewonnen: "+erg*100+" %");
         }
         catch(Exception ex)
@@ -22,7 +22,7 @@ public class Main
         MyComputerPlayer player=new MyComputerPlayer();
         
         //OthelloControler.run(evaluator, player);
-        OthelloControler.runConsole(evaluator, player,2);
-       // testPlayer(evaluator,player);
+       // OthelloControler.runConsole(evaluator, player,2);
+        testPlayer(evaluator,player);
     }
 }

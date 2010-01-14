@@ -19,8 +19,8 @@ public class Node<MoveT> {
     private int depth;
     private MoveT bestMove;
     // for pruning
-    private Double p1Bound;
-    private Double p2Bound;
+    private Double min;
+    private Double max;
 
     public Node(IStdGame<MoveT> original, MoveT move, int depth) {
         if(depth > 0){
@@ -30,8 +30,8 @@ public class Node<MoveT> {
         this.move = move;
         this.depth = depth;
 
-        this.p1Bound = 0d;
-        this.p2Bound = 0d;
+        this.min = 0d;
+        this.max = 0d;
 
         try {
             if (move != null) {
@@ -59,22 +59,33 @@ public class Node<MoveT> {
         bestMove = null;
 
         for (MoveT m : state.getPossibleMoves()) {
-            node = new Node(state, m, depth + 1);
+            // calculate
+			node = new Node(state, m, depth + 1);
             value = node.getValue(evaluator, maxDepth);
+			// update the bound
+			if(state.isPlayer1sTurn()){
+				if(value < min){
+					min = value;
+				}
+			} else {
+				if(best > max){
+					max = value;
+				}
+			}
+
+			if(!state.isPlayer1sTurn()){
+				value = 1 - value;
+			}
             //	System.out.println("MOVE: "+move+"\tvalue: "+value);
 
-            if ((best == null) || (state.isPlayer1sTurn() && value > best) ||
-                    (!state.isPlayer1sTurn() && value < best)) {
+            if ((best == null) || (value > best)){
                 bestMove = m;
                 best = value;
             }
 
         }
-        if(state.isPlayer1sTurn()){
-            p1Bound = best;
-        } else {
-            p2Bound = best;
-        }
+		if(best != null){
+		}
 
         return bestMove;
 
@@ -88,7 +99,7 @@ public class Node<MoveT> {
                 bestMove = getBestMove(evaluator, maxDepth);
             }
             //System.out.println("best move at depth "+depth+" is "+bestMove);
-            System.out.println(this);
+         //   System.out.println(this);
             Node<MoveT> next = new Node(state, bestMove, depth+1);
             return next.getValue(evaluator, maxDepth);
         }
@@ -105,15 +116,15 @@ public class Node<MoveT> {
     }
 
     // for checking while pruning
-    public Double getP1Bound(){
-        return p1Bound;
+    public Double getmin(){
+        return min;
     }
-    public Double getP2Bound(){
-        return p2Bound;
+    public Double getmax(){
+        return max;
     }
 
     @Override
     public String toString() {
-        return "Node "+move+" at depth "+depth+" with bounds ("+p1Bound+", "+p2Bound+")";
+        return "Node "+move+" at depth "+depth+" with bounds ("+min+", "+max+")";
     }
 }
