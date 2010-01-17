@@ -1,5 +1,6 @@
 
 import gki.game.*;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -18,7 +19,6 @@ public class MyOthelloEvaluator implements IGameEvaluator<OthelloMove> {
     private Double otherMoves;
 
     public double evaluateGame(IStdGame<OthelloMove> gameSetting) {
-        this.game = (OthelloGame) gameSetting;
 
         //+++++++++++++++++++++++++++++++++++++++++++
         //student begin

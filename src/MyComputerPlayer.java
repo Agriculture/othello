@@ -17,7 +17,7 @@ public class MyComputerPlayer<MoveT> implements IComputerPlayer<MoveT> {
 
         //Todo: bessere Strategie, beste erreichbare Bewertung genauer setzen
         //simpel: ersten gefundenen Zug durchführen
-        Node<MoveT> state = new Node(game, evaluator, null, maxDepth);
+        Node<MoveT> state = new Node(game, evaluator, null, maxDepth-1);
         best = state.getValue();
         bestMove = state.getBestMove();
 
