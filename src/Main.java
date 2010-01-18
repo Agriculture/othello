@@ -31,7 +31,7 @@ public class Main
         MyOthelloEvaluator evaluator=new MyOthelloEvaluator();
         MyComputerPlayer player=new MyComputerPlayer();
         
-       // OthelloControler.run(evaluator, player);
+      //  OthelloControler.run(evaluator, player);
        // OthelloControler.runConsole(evaluator, player,2);
         testPlayer(evaluator,player);
     }

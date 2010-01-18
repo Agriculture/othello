@@ -1,68 +1,85 @@
 
 import gki.game.*;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import othello.base.OthelloGame;
 import othello.base.OthelloMove;
 
 /**
  *  Adapter for IStdGame
  * @author konrad
  */
-public class Node<MoveT> implements IStdGame<MoveT>{
-    private IStdGame<MoveT> adaptee;
+public class Node extends OthelloGame{
+    private OthelloGame adaptee;
     private Double alpha = null;
     private Double beta = null;
     private Double value = null;
-    private Node<MoveT> parent = null;
-    private MoveT move = null;
-    private MoveT bestMove = null;
-    private int Depth;
+    private Node parent = null;
+    private OthelloMove move = null;
+    private OthelloMove bestMove = null;
+    private int depth;
+	private List<Double> list = new LinkedList<Double>();
 
     /**
      * only for the root
      * @param adaptee
      */
-    public Node(IStdGame<MoveT> adaptee, int depth){
+    public Node(OthelloGame adaptee, int depth){
         this.adaptee = adaptee;
-        this.Depth = depth;
+        this.depth = depth;
     }
 
-    public Node(Node<MoveT> parent, int depth, MoveT move) throws Exception{
+    public Node(Node parent, int depth, OthelloMove move) throws Exception{
         this.adaptee = parent.copy();
         this.move = move;
         this.adaptee.doMove(move);
         this.parent = parent;
+		this.depth = depth;
     }
 
-    public IStdGame<MoveT> copy() {
-        return adaptee.copy();
+	@Override
+    public OthelloGame copy() {
+        return (OthelloGame) adaptee.copy();
     }
 
+	@Override
     public boolean isPlayer1sTurn() {
         return this.adaptee.isPlayer1sTurn();
     }
 
+	@Override
     public Winner getWinner() {
         return this.adaptee.getWinner();
     }
 
-    public Iterable<MoveT> getPossibleMoves() {
+    public Iterable<OthelloMove> getPossibleMoves() {
         return this.adaptee.getPossibleMoves();
     }
 
-    public void doMove(MoveT arg0) throws Exception {
+    public void doMove(OthelloMove arg0) throws Exception {
         adaptee.doMove(arg0);
     }
 
-    public void maxValue(Double arg, MoveT newMove){
-        if(value == null || arg > value){
+    public void maxValue(Double arg, OthelloMove newMove){
+//		System.out.println("maximize at depth "+depth+" value "+value+" with "+arg+" turn player1 "+this.isPlayer1sTurn());
+		list.add(arg);
+		if(value == null || arg > value){
             value = arg;
             bestMove = newMove;
         }
     }
 
-    public MoveT getBestMove(){
+	public OthelloMove getMove(){
+		return move;
+	}
+
+    public OthelloMove getBestMove(){
+		System.out.println(list);
+		System.out.println("best "+value);
+
         return bestMove;
     }
 
@@ -70,20 +87,12 @@ public class Node<MoveT> implements IStdGame<MoveT>{
         return value;
     }
 
-    public void setParent(Node<MoveT> parent){
-        this.parent = parent;
-    }
-
-    public Node<MoveT> getParent(){
+    public Node getParent(){
         return this.parent;
-    }
-
-    public void setDepth(int depth){
-        this.Depth = depth;
-    }
+	}
 
     public int getDepth(){
-        return this.Depth;
+        return this.depth;
     }
 
 }
