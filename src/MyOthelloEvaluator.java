@@ -22,6 +22,17 @@ public class MyOthelloEvaluator implements IGameEvaluator<OthelloMove> {
 
         //+++++++++++++++++++++++++++++++++++++++++++
         //student begin
+        this.game = (OthelloGame) gameSetting;
+
+        if(!game.getWinner().equals(Winner.NoWinnerYet)){
+            switch(game.getWinner()){
+                case Drawn: return 0.5d;
+                case Player1: return 1d;
+                case Player2: return 0d;
+            }
+        }
+
+
         discCount();
 
         corner();
