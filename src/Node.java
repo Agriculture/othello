@@ -5,212 +5,85 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import othello.base.OthelloMove;
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 /**
- *
+ *  Adapter for IStdGame
  * @author konrad
  */
-public class Node<MoveT> implements Comparable {
-
-    private IStdGame<MoveT> state;
-    private IGameEvaluator<MoveT> evaluator;
-    private MoveT move;
-    private int depth;
-    private MoveT bestMove;
-
-    public Node(IStdGame<MoveT> original, IGameEvaluator<MoveT> evaluator, MoveT move, int depth) {
-        this.state = original.copy();
-        this.move = move;
-        this.depth = depth;
-        this.evaluator = evaluator;
-
-
-        try {
-            if (move != null) {
-                // only at the root the move == null
-                state.doMove(move);
-            }
-        } catch (Exception ex) {
-            Logger.getLogger(Node.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
+public class Node<MoveT> implements IStdGame<MoveT>{
+    private IStdGame<MoveT> adaptee;
+    private Double alpha = null;
+    private Double beta = null;
+    private Double value = null;
+    private Node<MoveT> parent = null;
+    private MoveT move = null;
+    private MoveT bestMove = null;
+    private int Depth;
 
     /**
-     * use maxN:
-     *  - just maximize the player whose turn it is
-     *
-     * @param evaluator
-     * @param maxDepth
-     * @return
+     * only for the root
+     * @param adaptee
      */
-    public MoveT getBestMove() {
+    public Node(IStdGame<MoveT> adaptee, int depth){
+        this.adaptee = adaptee;
+        this.Depth = depth;
+    }
+
+    public Node(Node<MoveT> parent, int depth, MoveT move) throws Exception{
+        this.adaptee = parent.copy();
+        this.move = move;
+        this.adaptee.doMove(move);
+        this.parent = parent;
+    }
+
+    public IStdGame<MoveT> copy() {
+        return adaptee.copy();
+    }
+
+    public boolean isPlayer1sTurn() {
+        return this.adaptee.isPlayer1sTurn();
+    }
+
+    public Winner getWinner() {
+        return this.adaptee.getWinner();
+    }
+
+    public Iterable<MoveT> getPossibleMoves() {
+        return this.adaptee.getPossibleMoves();
+    }
+
+    public void doMove(MoveT arg0) throws Exception {
+        adaptee.doMove(arg0);
+    }
+
+    public void maxValue(Double arg, MoveT newMove){
+        if(value == null || arg > value){
+            value = arg;
+            bestMove = newMove;
+        }
+    }
+
+    public MoveT getBestMove(){
         return bestMove;
     }
 
-    public Double getValue() {
-        // NegaMax
-
-        return NegaMax(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        /*        if(state.isPlayer1sTurn()){
-        return max(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        } else {
-        return min(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        }
-         */    }
-
-    public Double max(Double alpha, Double beta) {
-        if (depth == 0 || !state.getPossibleMoves().iterator().hasNext()) {
-            return evaluator.evaluateGame(state);
-        }
-
-        Double value = null;
-        Node<MoveT> node = null;
-        // alpha is best for maximizing
-        bestMove = null;
-        // get the next moves
-        for (MoveT m : state.getPossibleMoves()) {
-            node = new Node(state, evaluator, m, depth - 1);
-            //  System.out.println("from "+move+" down to "+m+"\t at depth "+depth+"\t("+alpha+", "+beta+")\t go down");
-            value = node.min(alpha, beta);
-            //System.out.println("MOVE: "+m+"\t\t at depth "+depth+"\t("+alpha+", "+beta+")\tvalue: "+value);
-
-            if (bestMove == null) {
-                bestMove = m;
-            }
-            if (value >= beta) {
-//                bestMove = m;
-                return beta;
-            }
-
-            if (value > alpha) {
-                bestMove = m;
-                alpha = value;
-            }
-        }
-
-        return alpha;
+    public Double getValue(){
+        return value;
     }
 
-    public Double NegaMax(Double alpha, Double beta) {
-        if (depth == 0 || !state.getPossibleMoves().iterator().hasNext()) {
-            if (state.isPlayer1sTurn()) {
-                return evaluator.evaluateGame(state);
-            } else {
-                return -evaluator.evaluateGame(state);
-            }
-        }
-
-        Double value = null;
-        Node<MoveT> node = null;
-        bestMove = null;
-        // get the next moves
-/*        PriorityQueue<Node> queue = new PriorityQueue<Node>();
-        for (MoveT m : state.getPossibleMoves()) {
-        queue.add(new Node(state, evaluator, m, depth - 1));
-        }
-        
-        while(!queue.isEmpty()){
-        node = queue.poll();
-         */
-        for (MoveT m : state.getPossibleMoves()) {
-            node = new Node(state, evaluator, m, depth - 1);
-            Main.expandedNodes++;
-            //   System.out.println("from "+move+" down to "+node+"\t at depth "+depth+"\t("+alpha+", "+beta+")\t go down");
-            value = -node.NegaMax(-beta, -alpha);
-
-            if (bestMove == null) {
-                bestMove = node.getMove();
-            }
-
-            if (value >= beta) {
-                Main.prunedNodes++;
-                return beta;
-            }
-
-            if (value > alpha) {
-                bestMove = node.getMove();
-                alpha = value;
-            }
-        }
-
-        return alpha;
+    public void setParent(Node<MoveT> parent){
+        this.parent = parent;
     }
 
-    public Double min(Double alpha, Double beta) {
-        if (depth == 0 || !state.getPossibleMoves().iterator().hasNext()) {
-            return evaluator.evaluateGame(state);
-        }
-
-        Double value = null;
-        Node<MoveT> node = null;
-        // beta is the best possible for minimize
-        bestMove = null;
-        // get the next moves
-        for (MoveT m : state.getPossibleMoves()) {
-            node = new Node(state, evaluator, m, depth - 1);
-            //  System.out.println("from "+move+" down to "+m+"\t at depth "+depth+"\t("+alpha+", "+beta+")\t go down");
-            value = node.max(alpha, beta);
-            //System.out.println("MOVE: "+m+"\t\t at depth "+depth+"\t("+alpha+", "+beta+")\tvalue: "+value);
-            if (bestMove == null) {
-                bestMove = m;
-            }
-            if (value <= alpha) {
-//                bestMove = m;
-                return alpha;
-            }
-
-            if (value < beta) {
-                beta = value;
-                bestMove = m;
-            }
-        }
-
-        return beta;
-
+    public Node<MoveT> getParent(){
+        return this.parent;
     }
 
-    // for getting the result while searching we need to recover the move
-    public MoveT getMove() {
-        return move;
+    public void setDepth(int depth){
+        this.Depth = depth;
     }
 
-    // checking the max depth
-    public int getDepth() {
-        return depth;
+    public int getDepth(){
+        return this.Depth;
     }
 
-    public IStdGame<MoveT> getState() {
-        return state;
-    }
-
-    @Override
-    public String toString() {
-        return "Node " + move + " at depth " + depth;
-    }
-
-    /**
-     * not used
-     * @param arg0
-     * @return
-     */
-    public int compareTo(Object arg0) {
-        Node o = (Node) arg0;
-        Double a;
-        if (state.isPlayer1sTurn()) {
-            a = -evaluator.evaluateGame(state);
-        } else {
-            a = evaluator.evaluateGame(state);
-        }
-        Double b;
-        if (o.getState().isPlayer1sTurn()) {
-            b = -evaluator.evaluateGame(o.getState());
-        } else {
-            b = evaluator.evaluateGame(o.getState());
-        }
-        return -a.compareTo(b);
-    }
 }
