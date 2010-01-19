@@ -21,18 +21,19 @@ public class Node extends OthelloGame{
     private OthelloMove move = null;
     private OthelloMove bestMove = null;
     private int depth;
-	private List<Double> list = new LinkedList<Double>();
 
     /**
      * only for the root
      * @param adaptee
      */
     public Node(OthelloGame adaptee, int depth){
+		super();
         this.adaptee = adaptee;
         this.depth = depth;
     }
 
     public Node(Node parent, int depth, OthelloMove move) throws Exception{
+		super();
         this.adaptee = parent.copy();
         this.move = move;
         this.adaptee.doMove(move);
@@ -55,21 +56,34 @@ public class Node extends OthelloGame{
         return this.adaptee.getWinner();
     }
 
-    public Iterable<OthelloMove> getPossibleMoves() {
-        return this.adaptee.getPossibleMoves();
+	@Override
+	public PlayerColor getFieldColor(int x, int y) {
+		return adaptee.getFieldColor(x, y);
+	}
+
+	public Iterable<OthelloMove> getPossibleMoves() {
+    	return this.adaptee.getPossibleMoves();
     }
 
     public void doMove(OthelloMove arg0) throws Exception {
         adaptee.doMove(arg0);
     }
 
-    public void maxValue(Double arg, OthelloMove newMove){
+    public void optimizeValue(Double arg, OthelloMove newMove){
 //		System.out.println("maximize at depth "+depth+" value "+value+" with "+arg+" turn player1 "+this.isPlayer1sTurn());
-		list.add(arg);
-		if(value == null || arg > value){
-            value = arg;
-            bestMove = newMove;
-        }
+		if(adaptee.isPlayer1sTurn()){
+			//maximize
+			if(value == null || arg > value){
+				value = arg;
+				bestMove = newMove;
+			}
+		} else {
+			//minimize
+			if(value == null || arg < value){
+				value = arg;
+				bestMove = newMove;
+			}
+		}
     }
 
 	public OthelloMove getMove(){
@@ -77,9 +91,6 @@ public class Node extends OthelloGame{
 	}
 
     public OthelloMove getBestMove(){
-		System.out.println(list);
-		System.out.println("best "+value);
-
         return bestMove;
     }
 
@@ -94,5 +105,11 @@ public class Node extends OthelloGame{
     public int getDepth(){
         return this.depth;
     }
+
+	@Override
+	public String toString() {
+		return adaptee.toString()+"\nPLAYER "+(adaptee.isPlayer1sTurn() ? "wHITE" : "BLACK");
+	}
+
 
 }

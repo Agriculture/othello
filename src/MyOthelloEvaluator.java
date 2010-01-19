@@ -17,12 +17,18 @@ public class MyOthelloEvaluator implements IGameEvaluator<OthelloMove> {
     private int otherCorner;
     private Double myMoves;
     private Double otherMoves;
+	private HashMap<OthelloGame, Double> hash = new HashMap<OthelloGame, Double>();
 
     public double evaluateGame(IStdGame<OthelloMove> gameSetting) {
 
         //+++++++++++++++++++++++++++++++++++++++++++
         //student begin
         this.game = (OthelloGame) gameSetting;
+	
+		if(hash.containsKey(game)){
+			return hash.get(game);
+		}
+
 
         if(!game.getWinner().equals(Winner.NoWinnerYet)){
             switch(game.getWinner()){
@@ -51,6 +57,7 @@ public class MyOthelloEvaluator implements IGameEvaluator<OthelloMove> {
 
         double result = myValue / (myValue + otherValue);
 
+		hash.put(game, result);
         return result;
         //student end
         //+++++++++++++++++++++++++++++++++++++++++++

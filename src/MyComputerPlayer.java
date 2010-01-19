@@ -27,7 +27,7 @@ public class MyComputerPlayer<MoveT> implements IComputerPlayer<MoveT> {
         try {
             //Todo: bessere Strategie, beste erreichbare Bewertung genauer setzen
             //simpel: ersten gefundenen Zug durchführen
-            bestMove = NegaMax(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, maxDepth - 1);
+            bestMove = NegaMax(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, maxDepth);
         } catch (Exception ex) {
             Logger.getLogger(MyComputerPlayer.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -57,12 +57,7 @@ public class MyComputerPlayer<MoveT> implements IComputerPlayer<MoveT> {
                 // this node is already maxed and the value can be pushed up
                 Node parent = node.getParent();
                 if(parent != null){
-                    // check if we need to invert
-                    if(parent.isPlayer1sTurn() != node.isPlayer1sTurn()){
-                        parent.maxValue(-node.getValue(), node.getMove());
-                    } else {
-                        parent.maxValue(node.getValue(), node.getMove());
-                    }
+                    parent.optimizeValue(node.getValue(), node.getMove());
                 }
             } else {
                 //try to get the value
@@ -71,11 +66,7 @@ public class MyComputerPlayer<MoveT> implements IComputerPlayer<MoveT> {
                 if ((node.getDepth() == 0 || !node.getPossibleMoves().iterator().hasNext())) {
 				//	System.out.println("leaf ");
 					if(node.getParent() != null){
-						if (node.getParent().isPlayer1sTurn() != node.isPlayer1sTurn()) {
-							node.getParent().maxValue(-evaluator.evaluateGame(node), node.getMove());
-						} else {
-							node.getParent().maxValue(evaluator.evaluateGame(node), node.getMove());
-						}
+						node.getParent().optimizeValue(evaluator.evaluateGame(node), node.getMove());
 					}
                 } else {
                     // go deeper until leaf
@@ -89,10 +80,10 @@ public class MyComputerPlayer<MoveT> implements IComputerPlayer<MoveT> {
 					//	System.out.println("new child at depth "+(node.getDepth()-1)+" with move "+move);
                         queue.add(0, child);
                     }
-                }
+
+				}
             }
         }
-        // last node is also the first Node
         return (MoveT) root.getBestMove();
     }
 }
