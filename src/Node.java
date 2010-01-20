@@ -21,12 +21,13 @@ public class Node extends OthelloGame{
     private OthelloMove bestMove = null;
     private int depth;
 	private boolean isOptimized = false;
+	private Integer hash = null;
 
     /**
      * only for the root
      * @param adaptee
      */
-    public Node(Double alpha, Double beta, OthelloGame adaptee, int depth){
+    public Node(OthelloGame adaptee, int depth, Double alpha, Double beta){
 		super();
         this.adaptee = adaptee;
         this.depth = depth;
@@ -34,13 +35,15 @@ public class Node extends OthelloGame{
 		this.beta = beta;
     }
 
-    public Node(Node parent, int depth, OthelloMove move) throws Exception{
+    public Node(Node parent, int depth, OthelloMove move, Double alpha, Double beta) throws Exception{
 		super();
         this.adaptee = parent.copy();
         this.move = move;
         this.adaptee.doMove(move);
         this.parent = parent;
 		this.depth = depth;
+		this.alpha = alpha;
+		this.beta = beta;
     }
 
 	@Override
@@ -146,6 +149,69 @@ public class Node extends OthelloGame{
 	public String toString() {
 		return adaptee.toString()+"\nPLAYER "+(adaptee.isPlayer1sTurn() ? "wHITE" : "BLACK");
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final Node other = (Node) obj;
+		if (this.adaptee != other.adaptee && (this.adaptee == null || !this.adaptee.equals(other.adaptee))) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		if(hash == null){
+			generateHash();
+		}
+		return hash;
+	}
+
+	private void generateHash() {
+		int count = 0;
+		hash = 0;
+		for(int x=0; x<2; x++){
+			for(int y=0; y<2; y++){
+				switch(adaptee.getFieldColor(x*4+1, y*4+0)){
+					case Player1: hash += Math.round((float) (Math.pow(3, count) + 0));
+					case Player2: hash += Math.round((float) (Math.pow(3, count) + 1));
+					default: hash += Math.round((float) (Math.pow(3, count) + 2));
+				}
+				count++;
+				switch(adaptee.getFieldColor(x*4+0, y*4+1)){
+					case Player1: hash += Math.round((float) (Math.pow(3, count) + 0));
+					case Player2: hash += Math.round((float) (Math.pow(3, count) + 1));
+					default: hash += Math.round((float) (Math.pow(3, count) + 2));
+				}
+				count++;
+				switch(adaptee.getFieldColor(x*4+3, y*4+1)){
+					case Player1: hash += Math.round((float) (Math.pow(3, count) + 0));
+					case Player2: hash += Math.round((float) (Math.pow(3, count) + 1));
+					default: hash += Math.round((float) (Math.pow(3, count) + 2));
+				}
+				count++;
+				switch(adaptee.getFieldColor(x*4+1, y*4+3)){
+					case Player1: hash += Math.round((float) (Math.pow(3, count) + 0));
+					case Player2: hash += Math.round((float) (Math.pow(3, count) + 1));
+					default: hash += Math.round((float) (Math.pow(3, count) + 2));
+				}
+				count++;
+				switch(adaptee.getFieldColor(x*4+3, y*4+3)){
+					case Player1: hash += Math.round((float) (Math.pow(3, count) + 0));
+					case Player2: hash += Math.round((float) (Math.pow(3, count) + 1));
+					default: hash += Math.round((float) (Math.pow(3, count) + 2));
+				}
+				count++;
+			}
+		}
+	}
+
 
 
 }

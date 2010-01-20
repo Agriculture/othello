@@ -41,7 +41,7 @@ public class MyComputerPlayer<MoveT> implements IComputerPlayer<MoveT> {
 
         List<Node> queue = new LinkedList<Node>();
         // add the root
-        Node root = new Node(alpha, beta, game, (maxDepth - 1));
+        Node root = new Node(game, (maxDepth - 1), alpha, beta);
         queue.add(root);
 
         Node node = null;
@@ -62,7 +62,6 @@ public class MyComputerPlayer<MoveT> implements IComputerPlayer<MoveT> {
 					if(parent != null){
 						if(!parent.optimizeValue(node.getValue(), node.getMove())){
 							// pruning is going on -> dont calculate further under parent
-							System.out.println("pruning");
 							pruning = true;
 						}
 					}
@@ -83,7 +82,7 @@ public class MyComputerPlayer<MoveT> implements IComputerPlayer<MoveT> {
 						Node child = null;
 
 						for (OthelloMove move : node.getPossibleMoves()) {
-							child = new Node(node, node.getDepth() - 1, move);
+							child = new Node(node, node.getDepth() - 1, move, node.getAlpha(), node.getBeta());
 						//	System.out.println("new child at depth "+(node.getDepth()-1)+" with move "+move);
 							queue.add(0, child);
 						}

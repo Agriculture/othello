@@ -24,7 +24,7 @@ public class MyOthelloEvaluator implements IGameEvaluator<OthelloMove> {
         //+++++++++++++++++++++++++++++++++++++++++++
         //student begin
         this.game = (OthelloGame) gameSetting;
-	
+
 		if(hash.containsKey(game)){
 			return hash.get(game);
 		}
