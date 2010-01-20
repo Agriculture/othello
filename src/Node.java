@@ -16,20 +16,22 @@ public class Node extends OthelloGame{
     private OthelloGame adaptee;
     private Double alpha = null;
     private Double beta = null;
-    private Double value = null;
     private Node parent = null;
     private OthelloMove move = null;
     private OthelloMove bestMove = null;
     private int depth;
+	private boolean isOptimized = false;
 
     /**
      * only for the root
      * @param adaptee
      */
-    public Node(OthelloGame adaptee, int depth){
+    public Node(Double alpha, Double beta, OthelloGame adaptee, int depth){
 		super();
         this.adaptee = adaptee;
         this.depth = depth;
+		this.alpha = alpha;
+		this.beta = beta;
     }
 
     public Node(Node parent, int depth, OthelloMove move) throws Exception{
@@ -69,21 +71,42 @@ public class Node extends OthelloGame{
         adaptee.doMove(arg0);
     }
 
-    public void optimizeValue(Double arg, OthelloMove newMove){
+    public Boolean optimizeValue(Double arg, OthelloMove newMove){
 //		System.out.println("maximize at depth "+depth+" value "+value+" with "+arg+" turn player1 "+this.isPlayer1sTurn());
+		if(!isOptimized){
+			if(parent != null){
+				this.alpha = parent.getAlpha();
+				this.beta = parent.getBeta();
+			}
+			isOptimized = true;
+		}
+
 		if(adaptee.isPlayer1sTurn()){
 			//maximize
-			if(value == null || arg > value){
-				value = arg;
+			if(arg >= beta){
+				// pruning
+				alpha = beta;
+				bestMove = newMove;
+				return false;
+			}
+			if(arg > alpha){
+				alpha = arg;
 				bestMove = newMove;
 			}
 		} else {
 			//minimize
-			if(value == null || arg < value){
-				value = arg;
+			if(arg <= alpha){
+				//pruning
+				beta = alpha;
+				bestMove = newMove;
+				return false;
+			}
+			if(arg < beta){
+				beta = arg;
 				bestMove = newMove;
 			}
 		}
+		return true;
     }
 
 	public OthelloMove getMove(){
@@ -95,7 +118,11 @@ public class Node extends OthelloGame{
     }
 
     public Double getValue(){
-        return value;
+		if(adaptee.isPlayer1sTurn()){
+			return alpha;
+		} else {
+			return beta;
+		}
     }
 
     public Node getParent(){
@@ -105,6 +132,15 @@ public class Node extends OthelloGame{
     public int getDepth(){
         return this.depth;
     }
+	public Double getAlpha(){
+		return this.alpha;
+	}
+	public Double getBeta(){
+		return this.beta;
+	}
+	public Boolean isOptimized(){
+		return isOptimized;
+	}
 
 	@Override
 	public String toString() {
