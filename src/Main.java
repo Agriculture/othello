@@ -2,7 +2,7 @@ import gki.game.*;
 import java.util.Date;
 import othello.base.*;
 
-public class Main 
+public class Main
 {
 	public static int expandedNodes  = 0;
 	public static int prunedNodes  = 0;
@@ -30,7 +30,7 @@ public class Main
     {
         MyOthelloEvaluator evaluator=new MyOthelloEvaluator();
         MyComputerPlayer player=new MyComputerPlayer();
-        
+
       //  OthelloControler.run(evaluator, player);
 //       OthelloControler.runConsole(evaluator, player,3);
         testPlayer(evaluator,player);
